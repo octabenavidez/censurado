@@ -1,0 +1,49 @@
+---
+import type { BranchLink } from '../data/links';
+import LinkActions from './LinkActions';
+
+/**
+ * Props for the LinkCard Astro component.
+ */
+interface Props {
+  /** Link item data */
+  link: BranchLink;
+}
+
+const { link } = Astro.props;
+const thumbnailSrc = link.thumbnail || '/images/cara-con-fondo.webp';
+---
+
+<div class="link-card-container">
+  <a
+    href={link.href}
+    class="link-card-anchor"
+    rel="noopener"
+  >
+    <!-- Left slot: face thumbnail icon -->
+    <span class="link-card-slot-left" aria-hidden="true">
+      <img
+        src={thumbnailSrc}
+        alt=""
+        width="48"
+        height="48"
+        class="link-card-thumbnail"
+        loading="lazy"
+        decoding="async"
+      />
+    </span>
+
+    <!-- Center slot: label text geometrically centered -->
+    <span class="link-card-slot-center">
+      <span class="link-card-label">{link.label}</span>
+    </span>
+
+    <!-- Right slot: spacer reserving space for three-dots button -->
+    <span class="link-card-slot-right-spacer" aria-hidden="true"></span>
+  </a>
+
+  <!-- Sibling actions button (React island client:load) -->
+  <div class="link-card-actions-wrapper">
+    <LinkActions client:load link={link} />
+  </div>
+</div>

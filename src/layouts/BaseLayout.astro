@@ -1,0 +1,111 @@
+---
+import { SITE_CONFIG } from '../data/site-config';
+import '../styles/global.css';
+
+/**
+ * Props for BaseLayout component.
+ */
+interface Props {
+  /** Optional custom title override */
+  title?: string;
+  /** Optional custom meta description override */
+  description?: string;
+  /** Optional robots directive (e.g. "noindex, nofollow" for 404) */
+  robots?: string;
+}
+
+const {
+  title = SITE_CONFIG.title,
+  description = SITE_CONFIG.metaDescription,
+  robots = 'index, follow',
+} = Astro.props;
+
+// Determine absolute canonical URL if site URL is configured
+const hasConfiguredDomain = Boolean(SITE_CONFIG.siteUrl && !SITE_CONFIG.siteUrl.includes('example.com'));
+const canonicalUrl = hasConfiguredDomain
+  ? new URL(Astro.url.pathname, SITE_CONFIG.siteUrl).href
+  : null;
+
+const ogImageUrl = hasConfiguredDomain
+  ? new URL(SITE_CONFIG.ogCoverPath, SITE_CONFIG.siteUrl).href
+  : SITE_CONFIG.ogCoverPath;
+
+// Build verified JSON-LD structured data without inventing fake local restaurant details
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      name: 'Censurado',
+      ...(hasConfiguredDomain ? { url: SITE_CONFIG.siteUrl } : {}),
+      ...(hasConfiguredDomain ? { logo: new URL(SITE_CONFIG.avatarPath, SITE_CONFIG.siteUrl).href } : {}),
+      sameAs: [SITE_CONFIG.instagramUrl],
+      description: 'Burgers, Lomos, Wraps y Pickers',
+    },
+    {
+      '@type': 'WebSite',
+      name: 'Censurado',
+      ...(hasConfiguredDomain ? { url: SITE_CONFIG.siteUrl } : {}),
+      description: 'Página oficial de sucursales y pedidos de Censurado.',
+      inLanguage: SITE_CONFIG.lang,
+    },
+  ],
+};
+---
+
+<!doctype html>
+<html lang={SITE_CONFIG.lang} dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content={robots} />
+    <meta name="description" content={description} />
+
+    <title>{title}</title>
+
+    <!-- Canonical URL (only output when real domain is configured) -->
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" type="image/png" href="/favicon.png" />
+
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Censurado - Sucursales y pedidos" />
+    <meta property="og:locale" content="es_AR" />
+    {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+    <meta name="twitter:image:alt" content="Censurado - Sucursales y pedidos" />
+
+    <!-- Schema.org JSON-LD Structured Data -->
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+
+    <!-- Fallback styles when JavaScript is disabled -->
+    <noscript>
+      <style>
+        .link-card-actions-wrapper,
+        .profile-top-bar {
+          display: none !important;
+        }
+      </style>
+    </noscript>
+  </head>
+  <body>
+    <div class="page-wrapper">
+      <main class="profile-card">
+        <slot />
+      </main>
+    </div>
+  </body>
+</html>

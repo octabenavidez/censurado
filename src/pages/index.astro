@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProfileHeader from '../components/ProfileHeader.astro';
+import LinkCard from '../components/LinkCard.astro';
+import SharePage from '../components/SharePage';
+import { BRANCH_LINKS } from '../data/links';
+import { SITE_CONFIG } from '../data/site-config';
+
+/**
+ * Index page for Censurado Linktree clone.
+ * Renders the main profile card, header, and 8 verified branch links.
+ */
+---
+
+<BaseLayout>
+  <div class="profile-top-bar">
+    <SharePage client:load title={SITE_CONFIG.title} siteUrl={SITE_CONFIG.siteUrl} />
+  </div>
+
+  <ProfileHeader />
+
+  <section class="links-list" aria-label="Sucursales y enlaces">
+    {BRANCH_LINKS.map((link) => (
+      <LinkCard link={link} />
+    ))}
+  </section>
+</BaseLayout>

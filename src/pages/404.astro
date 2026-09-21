@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE_CONFIG } from '../data/site-config';
+
+/**
+ * 404 Not Found error page for Censurado.
+ * Provides a clean back-to-home button and stops crawlers with noindex.
+ */
+---
+
+<BaseLayout
+  title="Página no encontrada | Censurado"
+  description="La página que buscas no existe o ha sido movida."
+  robots="noindex, nofollow"
+>
+  <div class="error-page-container">
+    <div class="profile-avatar-wrapper" style="margin-bottom: 20px;">
+      <img
+        src={SITE_CONFIG.avatarPath}
+        alt="Censurado"
+        width="104"
+        height="104"
+        class="profile-avatar-img"
+      />
+    </div>
+
+    <h1 class="error-title">404</h1>
+    <p class="error-subtitle">Página no encontrada</p>
+    <p style="color: #9BA3A9; margin-bottom: 28px; max-width: 380px;">
+      El enlace al que intentas acceder no está disponible o ha cambiado de dirección.
+    </p>
+
+    <a href="/" class="error-home-btn">
+      Volver al inicio
+    </a>
+  </div>
+</BaseLayout>

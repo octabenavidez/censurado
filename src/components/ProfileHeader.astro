@@ -1,0 +1,24 @@
+---
+import { SITE_CONFIG } from '../data/site-config';
+
+/**
+ * ProfileHeader renders the profile avatar, single H1 handle, and verified bio description.
+ * This is rendered as 100% static HTML without client JavaScript.
+ */
+---
+
+<header class="profile-header">
+  <div class="profile-avatar-wrapper">
+    <img
+      src={SITE_CONFIG.avatarPath}
+      alt="Censurado"
+      width="104"
+      height="104"
+      class="profile-avatar-img"
+      loading="eager"
+      decoding="async"
+    />
+  </div>
+  <h1 class="profile-title">{SITE_CONFIG.profileHandle}</h1>
+  <p class="profile-description">{SITE_CONFIG.profileDescription}</p>
+</header>

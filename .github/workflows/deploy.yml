@@ -1,0 +1,47 @@
+name: Build and publish deploy branch
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: publish-deploy
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      SITE_URL: ${{ vars.SITE_URL }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build
+      - run: python3 scripts/verify-build.py
+      - name: Publish compiled files (preserve deployment history)
+        shell: bash
+        run: |
+          set -euo pipefail
+          auth_header=$(git config --get http.https://github.com/.extraheader)
+          cd dist
+          git init --initial-branch=deploy
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config http.https://github.com/.extraheader "$auth_header"
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          if git ls-remote --exit-code --heads origin deploy > /dev/null; then
+            git fetch --depth=1 origin deploy
+            git reset --soft FETCH_HEAD
+          fi
+          git add --all
+          if git diff --cached --quiet && git rev-parse --verify HEAD >/dev/null 2>&1; then
+            echo 'Compiled output unchanged.'
+          else
+            git commit -m "Build ${GITHUB_SHA}"
+            git push origin HEAD:deploy
+          fi
