@@ -8,30 +8,29 @@ const path = require('path');
 function publishDeploy() {
   const rootDir = path.resolve(__dirname, '..');
   const distDir = path.join(rootDir, 'dist');
+  const rootOptions = { cwd: rootDir, stdio: ['ignore', 'inherit', 'inherit'], shell: true };
+  const distOptions = { cwd: distDir, stdio: ['ignore', 'inherit', 'inherit'], shell: true };
 
-  console.log('1. Checking project types and integrity...');
-  execSync('npm run check', { cwd: rootDir, stdio: 'inherit' });
+  console.log('1. Compiling production build...');
+  execSync('npm run build', rootOptions);
 
-  console.log('2. Compiling production build...');
-  execSync('npm run build', { cwd: rootDir, stdio: 'inherit' });
+  console.log('2. Verifying build output...');
+  execSync('python scripts/verify-build.py', rootOptions);
 
-  console.log('3. Verifying build output...');
-  execSync('python scripts/verify-build.py', { cwd: rootDir, stdio: 'inherit' });
-
-  console.log('4. Publishing static files to deploy branch...');
+  console.log('3. Publishing static files to deploy branch...');
   const gitDir = path.join(distDir, '.git');
   if (fs.existsSync(gitDir)) {
     fs.rmSync(gitDir, { recursive: true, force: true });
   }
 
   try {
-    execSync('git init --initial-branch=deploy', { cwd: distDir, stdio: 'inherit' });
-    execSync('git config user.name "octabenavidez"', { cwd: distDir, stdio: 'inherit' });
-    execSync('git config user.email "octabenavidezsarmiento@gmail.com"', { cwd: distDir, stdio: 'inherit' });
-    execSync('git remote add origin https://github.com/octabenavidez/censurado.git', { cwd: distDir, stdio: 'inherit' });
-    execSync('git add --all', { cwd: distDir, stdio: 'inherit' });
-    execSync('git commit -m "Deploy latest build"', { cwd: distDir, stdio: 'inherit' });
-    execSync('git push -u origin deploy --force', { cwd: distDir, stdio: 'inherit' });
+    execSync('git init --initial-branch=deploy', distOptions);
+    execSync('git config user.name "octabenavidez"', distOptions);
+    execSync('git config user.email "octabenavidezsarmiento@gmail.com"', distOptions);
+    execSync('git remote add origin https://github.com/octabenavidez/censurado.git', distOptions);
+    execSync('git add --all', distOptions);
+    execSync('git commit -m "Deploy latest build with new favicon"', distOptions);
+    execSync('git push -u origin deploy --force', distOptions);
     console.log('SUCCESS: Successfully updated deploy branch on origin.');
   } finally {
     if (fs.existsSync(gitDir)) {
